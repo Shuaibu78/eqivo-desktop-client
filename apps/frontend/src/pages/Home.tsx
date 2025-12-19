@@ -15,7 +15,6 @@ function Home() {
   const [error, setError] = useState<string | null>(null);
   const [mockMode, setMockMode] = useState(false);
 
-  // Load call history and mock mode on mount
   useEffect(() => {
     if (isElectronAvailable) {
       loadCallHistory();
@@ -38,7 +37,6 @@ function Home() {
     electronAPI.setMockMode(newMode);
   };
 
-  // Listen for call status updates
   useEffect(() => {
     if (!isElectronAvailable) return;
 
@@ -47,7 +45,6 @@ function Home() {
       status: string;
       call?: Call;
     }) => {
-      // Clear loading state when call is initiated or ended
       if (data.status === "initiated" || data.status === "ended") {
         setLoading(false);
       }
@@ -63,7 +60,6 @@ function Home() {
           return [data.call!, ...prev];
         });
       } else {
-        // Update existing call status
         setCalls((prev) =>
           prev.map((call) =>
             call.id === data.callId ? { ...call, status: data.status } : call
@@ -74,13 +70,9 @@ function Home() {
 
     electronAPI.onCallStatus(handleStatus);
 
-    return () => {
-      // Cleanup: Remove listeners when component unmounts
-      // Note: In a production app, you'd want to properly remove IPC listeners
-    };
+    return () => {};
   }, []);
 
-  // Listen for errors
   useEffect(() => {
     if (!isElectronAvailable) return;
 
@@ -92,12 +84,9 @@ function Home() {
 
     electronAPI.onError(handleError);
 
-    return () => {
-      // Cleanup
-    };
+    return () => {};
   }, []);
 
-  // Listen for mock mode changes from tray menu
   useEffect(() => {
     if (!isElectronAvailable) return;
 
@@ -107,9 +96,7 @@ function Home() {
 
     electronAPI.onMockModeChanged(handleMockModeChanged);
 
-    return () => {
-      // Cleanup
-    };
+    return () => {};
   }, []);
 
   const loadCallHistory = async () => {
@@ -136,7 +123,6 @@ function Home() {
     setError(null);
     electronAPI.startCall(number);
     setNumber("");
-    // Loading state will be cleared when call status updates to "initiated" or "ended", or on error
   };
 
   const formatDate = (timestamp: number) => {
@@ -188,7 +174,6 @@ function Home() {
           <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
             Eqivo Telephony Client
           </h1>
-          {/* Mock Mode Toggle */}
           <label className="flex items-center gap-2 cursor-pointer">
             <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
               MOCK API
@@ -228,7 +213,6 @@ function Home() {
           </div>
         )}
 
-        {/* Call Input Section */}
         <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 mb-6">
           <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">
             Make a Call
@@ -258,7 +242,6 @@ function Home() {
           )}
         </div>
 
-        {/* Call History Section */}
         <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
           <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">
             Call History

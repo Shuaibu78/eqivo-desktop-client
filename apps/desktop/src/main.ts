@@ -1,25 +1,11 @@
-// Load environment variables from .env file first, before any other imports
 import dotenv from "dotenv";
 import path from "path";
 import fs from "fs";
 import { app } from "electron";
 
-// Load .env file from the desktop folder (parent of dist/)
-// __dirname will be 'dist/' in compiled code, so go up one level to find .env
 const envPath = path.join(__dirname, "..", ".env");
-const result = dotenv.config({ path: envPath });
+dotenv.config({ path: envPath });
 
-if (result.error) {
-  // .env file not found or error reading it
-  console.warn(`Warning: Could not load .env file from ${envPath}`);
-  console.warn(
-    "Make sure RAPIDAPI_KEY is set in your .env file or as an environment variable"
-  );
-} else {
-  console.log(`Loaded environment variables from ${envPath}`);
-}
-
-// Now import other modules that may use environment variables
 import { BrowserWindow, globalShortcut } from "electron";
 import electronLogger from "./electronLogger";
 import "./ipc/call.ipc";
@@ -59,19 +45,15 @@ async function createWindow() {
     return;
   }
 
-  // Handle window close (hide instead of destroy on macOS)
   mainWindow.on("close", (event) => {
     if (process.platform !== "darwin") {
-      // On Windows/Linux, quit the app
       app.quit();
     } else {
-      // On macOS, hide the window instead of closing
       event.preventDefault();
       mainWindow?.hide();
     }
   });
 
-  // Clean up reference when window is destroyed
   mainWindow.on("closed", () => {
     mainWindow = null;
   });
@@ -80,7 +62,6 @@ async function createWindow() {
 const getMainWindow = () => mainWindow;
 
 app.whenReady().then(() => {
-  // Set USER_DATA default if not already set
   if (!process.env.USER_DATA) {
     process.env.USER_DATA = app.getPath("userData");
   }

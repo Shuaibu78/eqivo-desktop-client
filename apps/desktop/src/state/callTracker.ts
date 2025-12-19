@@ -29,16 +29,13 @@ export function trackCall(callId: string, win: BrowserWindow) {
       if (status !== lastStatus) {
         lastStatus = status;
 
-        // Update database
         await db.updateCallStatus(callId, status);
 
-        // Send to renderer
         win.webContents.send(IPC_CHANNELS.CALL_STATUS, {
           callId,
           status,
         });
 
-        // Show notification for status changes
         if (status === "ringing") {
           new Notification({
             title: "Call Ringing",

@@ -2,12 +2,10 @@ import sqlite3 from "sqlite3";
 import path from "path";
 import { app } from "electron";
 
-// Initialize database after app is ready
 let db: sqlite3.Database | null = null;
 
 function getDb(): sqlite3.Database {
   if (!db) {
-    // Ensure app is ready before accessing userData
     if (!app.isReady()) {
       throw new Error("Database accessed before app is ready");
     }
@@ -51,7 +49,6 @@ export default {
             reject(err);
             return;
           }
-          // Map toNumber back to 'to' for frontend compatibility (avoiding SQL reserved keyword)
           const mappedRows = (rows || []).map((row: any) => {
             const { toNumber, ...rest } = row;
             return { ...rest, to: toNumber };

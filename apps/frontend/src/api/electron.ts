@@ -12,11 +12,9 @@ declare global {
   }
 }
 
-// Check if we're running in Electron
 const isElectron =
   typeof window !== "undefined" && window.electronApi !== undefined;
 
-// Create a safe API wrapper that checks for Electron
 export const electronAPI = isElectron
   ? window.electronApi!
   : {
@@ -45,5 +43,4 @@ export const electronAPI = isElectron
       },
     };
 
-// Export a flag to check if Electron is available
 export const isElectronAvailable = isElectron;

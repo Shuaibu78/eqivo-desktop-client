@@ -15,14 +15,10 @@ export function setupTray(callbacks: TrayCallbacks) {
   const win = callbacks.getMainWindow();
   mainWindowRef = win || null;
 
-  // __dirname will be 'dist/' in compiled code
-  // Go up one level to project root, then into src/assets
   const imagePath = path.join(__dirname, "..", "src", "assets", "tray.png");
 
-  // Verify the file exists before creating Tray
   if (!fs.existsSync(imagePath)) {
     console.error(`Tray icon not found at: ${imagePath}`);
-    // Try alternative path using app.getAppPath()
     const appPath = app.getAppPath();
     const altPath = path.join(appPath, "src", "assets", "tray.png");
     if (fs.existsSync(altPath)) {
@@ -37,7 +33,6 @@ export function setupTray(callbacks: TrayCallbacks) {
     tray = new Tray(imagePath);
   }
 
-  // Update menu function
   const updateMenu = () => {
     const isMockMode = getMockMode();
     const window = callbacks.getMainWindow();
@@ -78,8 +73,7 @@ export function setupTray(callbacks: TrayCallbacks) {
         click: () => {
           const newMode = !isMockMode;
           setMockMode(newMode);
-          updateMenu(); // Refresh menu to show updated state
-          // Notify renderer if window is open
+          updateMenu();
           const win = callbacks.getMainWindow();
           if (win && !win.isDestroyed()) {
             win.webContents.send("call:mock-mode-changed", {
@@ -100,7 +94,6 @@ export function setupTray(callbacks: TrayCallbacks) {
             detail: `Version: ${app.getVersion()}\n\nA desktop client for making and managing telephony calls via the Eqivo API.`,
             buttons: ["OK"],
           };
-          // Show dialog - if window exists, use it as parent, otherwise show without parent
           if (win && !win.isDestroyed()) {
             await dialog.showMessageBox(win, options);
           } else {
@@ -121,23 +114,17 @@ export function setupTray(callbacks: TrayCallbacks) {
     tray.setContextMenu(menu);
   };
 
-  // Initial menu setup
   updateMenu();
 
-  // Update menu when window visibility changes
   const window = callbacks.getMainWindow();
   if (window) {
     window.on("show", updateMenu);
     window.on("hide", updateMenu);
   }
 
-  // Double-click to toggle window
   tray.on("double-click", callbacks.onOpen);
 
-  // Single click behavior (platform-specific)
   tray.on("click", () => {
-    // On macOS, single click shows menu (default behavior)
-    // On Windows/Linux, single click can toggle window
     if (process.platform !== "darwin") {
       const win = callbacks.getMainWindow();
       if (win) {
@@ -158,7 +145,6 @@ export function setupTray(callbacks: TrayCallbacks) {
   );
 }
 
-// Function to update main window reference
 export function updateMainWindow(window: BrowserWindow | null) {
   mainWindowRef = window;
 }

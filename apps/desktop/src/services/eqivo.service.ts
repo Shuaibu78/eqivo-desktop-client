@@ -1,11 +1,9 @@
 import axios from "axios";
 
-// API Configuration
 const API_URL = "https://eqivo-telephony.p.rapidapi.com";
 const BASE_URL = `${API_URL}/v0.1`;
 const HOST = "eqivo-telephony.p.rapidapi.com";
 
-// Get API key from environment
 const getApiKey = (): string => {
   const apiKey = process.env.RAPIDAPI_KEY;
   if (!apiKey) {
@@ -14,7 +12,6 @@ const getApiKey = (): string => {
   return apiKey;
 };
 
-// Get default headers for API requests
 const getHeaders = (
   contentType: string = "application/x-www-form-urlencoded"
 ) => ({
@@ -23,7 +20,6 @@ const getHeaders = (
   "content-type": contentType,
 });
 
-// Types for API responses
 interface CallResponse {
   RequestUUID?: string;
   CallUUID?: string;
@@ -48,17 +44,10 @@ interface CallStatusResponse {
   CallDuration?: number;
 }
 
-/**
- * Initiates an outbound call using the Eqivo Telephony API
- * @param to - Phone number to call (destination)
- * @param from - Phone number to use as caller ID
- * @returns Call object with UUID and metadata
- */
 export const startOutboundCall = async (
   to: string,
   from: string
 ): Promise<{ id: string; to: string; status: string; timestamp: number }> => {
-  // Validate inputs
   if (!to || !to.trim()) {
     throw new Error("Destination phone number (to) is required");
   }
@@ -66,14 +55,12 @@ export const startOutboundCall = async (
     throw new Error("Caller ID (from) is required");
   }
 
-  // Get configuration from environment variables
   const gateways = process.env.EQIVO_GATEWAYS || "user/";
   const answerUrl =
     process.env.EQIVO_ANSWER_URL || "https://demo.eqivo.org/answer.xml";
   const hangupUrl = process.env.EQIVO_HANGUP_URL || "";
   const ringUrl = process.env.EQIVO_RING_URL || "";
 
-  // Prepare form-encoded parameters
   const params = new URLSearchParams({
     To: to.trim(),
     From: from.trim(),
@@ -81,7 +68,6 @@ export const startOutboundCall = async (
     AnswerUrl: answerUrl,
   });
 
-  // Add optional parameters if provided
   if (hangupUrl) {
     params.append("HangupUrl", hangupUrl);
   }
@@ -96,13 +82,11 @@ export const startOutboundCall = async (
   }
 
   try {
-    // Try lowercase endpoint first (some APIs are case-sensitive)
     const endpoint = `${BASE_URL}/Call`;
     const response = await axios.post<CallResponse>(endpoint, params, {
       headers: getHeaders(),
     });
 
-    // Extract call UUID from response
     const callUuid =
       response.data.RequestUUID ||
       response.data.CallUUID ||
@@ -117,7 +101,6 @@ export const startOutboundCall = async (
       );
     }
 
-    // Return formatted call object for database storage
     return {
       id: callUuid,
       to: to.trim(),
@@ -133,7 +116,6 @@ export const startOutboundCall = async (
       headers: error.config?.headers,
     });
 
-    // Provide user-friendly error messages
     if (error.response) {
       const status = error.response.status;
       const data = error.response.data;
@@ -163,11 +145,6 @@ export const startOutboundCall = async (
   }
 };
 
-/**
- * Gets the current status of a call
- * @param callUuid - The UUID of the call to check
- * @returns Call status as a string (initiated, ringing, answered, ended, failed)
- */
 export const getCallStatus = async (callUuid: string): Promise<string> => {
   if (!callUuid || !callUuid.trim()) {
     throw new Error("Call UUID is required");
@@ -181,25 +158,20 @@ export const getCallStatus = async (callUuid: string): Promise<string> => {
       }
     );
 
-    // Extract status from response - try multiple possible fields
     const apiStatus =
       response.data.CallStatus ||
       response.data.status ||
       response.data.call_status;
 
     if (!apiStatus) {
-      // If no status found, check if call exists
       if (response.data.CallUUID) {
-        // Call exists but status unknown
         return "unknown";
       }
       throw new Error("Call status not found in API response");
     }
 
-    // Normalize status to lowercase for consistency
     const normalizedStatus = apiStatus.toLowerCase();
 
-    // Map common API statuses to our internal statuses
     const statusMap: Record<string, string> = {
       initiated: "initiated",
       ringing: "ringing",
@@ -216,7 +188,6 @@ export const getCallStatus = async (callUuid: string): Promise<string> => {
 
     return statusMap[normalizedStatus] || normalizedStatus;
   } catch (error: any) {
-    // If call not found (404), assume it ended
     if (error.response?.status === 404) {
       return "ended";
     }
@@ -227,7 +198,6 @@ export const getCallStatus = async (callUuid: string): Promise<string> => {
       status: error.response?.status,
     });
 
-    // For other errors, throw to allow retry logic
     throw new Error(
       `Failed to get call status: ${
         error.response?.data?.message || error.message
@@ -236,11 +206,6 @@ export const getCallStatus = async (callUuid: string): Promise<string> => {
   }
 };
 
-/**
- * Gets detailed call information
- * @param callUuid - The UUID of the call
- * @returns Full call details from the API
- */
 export const getCallDetails = async (
   callUuid: string
 ): Promise<CallStatusResponse> => {
@@ -275,7 +240,6 @@ export const getCallDetails = async (
   }
 };
 
-// Mock API functions for testing without real API calls
 let mockModeEnabled = false;
 
 export const setMockMode = (enabled: boolean) => {
@@ -287,17 +251,12 @@ export const getMockMode = (): boolean => {
   return mockModeEnabled;
 };
 
-/**
- * Mock version of startOutboundCall - simulates API call with realistic delays
- */
 export const startOutboundCallMock = async (
   to: string,
   from: string
 ): Promise<{ id: string; to: string; status: string; timestamp: number }> => {
-  // Simulate API delay
   await new Promise((resolve) => setTimeout(resolve, 500));
 
-  // Generate a mock call UUID
   const callUuid = `mock-${Date.now()}-${Math.random()
     .toString(36)
     .slice(2, 11)}`;
@@ -310,22 +269,12 @@ export const startOutboundCallMock = async (
   };
 };
 
-/**
- * Mock version of getCallStatus - simulates status progression
- */
 export const getCallStatusMock = async (callUuid: string): Promise<string> => {
-  // Simulate API delay
   await new Promise((resolve) => setTimeout(resolve, 200));
 
-  // Extract timestamp from mock UUID to determine status progression
   const timestamp = parseInt(callUuid.split("-")[1]) || Date.now();
   const age = Date.now() - timestamp;
 
-  // Simulate status progression over time:
-  // - initiated: 0-1s
-  // - ringing: 1-2s (1 second between ringing and answering)
-  // - answered: 2-4s (2 seconds between answered and ended)
-  // - ended: 4s+
   if (age < 1000) {
     return "initiated";
   } else if (age < 2000) {
@@ -337,9 +286,6 @@ export const getCallStatusMock = async (callUuid: string): Promise<string> => {
   }
 };
 
-/**
- * Wrapper function that uses mock or real API based on mode
- */
 export const startOutboundCallWithMode = async (
   to: string,
   from: string
@@ -351,9 +297,6 @@ export const startOutboundCallWithMode = async (
   return startOutboundCall(to, from);
 };
 
-/**
- * Wrapper function that uses mock or real API based on mode
- */
 export const getCallStatusWithMode = async (
   callUuid: string
 ): Promise<string> => {

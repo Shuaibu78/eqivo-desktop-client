@@ -2,8 +2,6 @@ import logger from "electron-log";
 import path from "path";
 import { app } from "electron";
 
-// Get USER_DATA from env or use app.getPath("userData") as fallback
-// main.ts sets USER_DATA in app.whenReady(), but this provides a safety fallback
 const getUserDataPath = () => {
   return process.env.USER_DATA || app.getPath("userData");
 };
