@@ -155,15 +155,8 @@ eqivo-desktop-client/
 
 - `apps/desktop` - Electron main process application
 - `apps/frontend` - React renderer application
-- `packages/shared` - Shared TypeScript types and IPC channel constants
 
 ### Key Components
-
-**IPC Communication (`packages/shared/src/ipc.ts`)**
-
-- Centralized IPC channel definitions
-- Type-safe channel names
-- Shared between Main and Renderer processes
 
 **Database Layer (`apps/desktop/src/db/db.ts`)**
 
@@ -739,7 +732,6 @@ Builds are created in `apps/desktop/release/`:
 
 - **Desktop**: CommonJS modules, ES2020 target
 - **Frontend**: ESNext modules, React JSX transform
-- **Shared**: Type definitions and constants
 
 ### IPC Communication Flow
 
@@ -758,11 +750,10 @@ Renderer (Frontend)          Main Process (Desktop)
 
 ### Adding New IPC Channels
 
-1. Add channel constant to `packages/shared/src/ipc.ts`
-2. Add handler in `apps/desktop/src/ipc/`
-3. Expose method in `apps/desktop/src/preload.ts`
-4. Add TypeScript types in `apps/frontend/src/api/electron.ts`
-5. Use in React components
+1. Add handler in `apps/desktop/src/ipc/`
+2. Expose method in `apps/desktop/src/preload.ts`
+3. Add TypeScript types in `apps/frontend/src/api/electron.ts`
+4. Use in React components
 
 ## Trade-offs & Production Improvements
 
