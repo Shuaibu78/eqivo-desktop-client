@@ -1,0 +1,21 @@
+{
+  "private": true,
+  "workspaces": [
+    "apps/*"
+  ],
+  "scripts": {
+    "dev": "concurrently -k -n \"frontend,desktop\" -c \"cyan,magenta\" \"yarn workspace @eqivo/frontend dev\" \"wait-on http://localhost:5173 && VITE_DEV_SERVER_URL=http://localhost:5173 yarn workspace @eqivo/desktop dev && VITE_DEV_SERVER_URL=http://localhost:5173 yarn workspace @eqivo/desktop start\"",
+    "dev:frontend": "yarn workspace @eqivo/frontend dev",
+    "dev:desktop": "yarn workspace @eqivo/desktop dev && yarn workspace @eqivo/desktop start",
+    "build": "yarn workspace @eqivo/frontend build && yarn workspace @eqivo/desktop build",
+    "dist": "yarn workspace @eqivo/desktop dist",
+    "dist:mac": "yarn workspace @eqivo/frontend build && yarn workspace @eqivo/desktop build && yarn workspace @eqivo/desktop dist:mac",
+    "dist:win": "yarn workspace @eqivo/frontend build && yarn workspace @eqivo/desktop build && yarn workspace @eqivo/desktop dist:win",
+    "dist:all": "yarn workspace @eqivo/frontend build && yarn workspace @eqivo/desktop build && yarn workspace @eqivo/desktop dist:all"
+  },
+  "devDependencies": {
+    "concurrently": "^9.1.2",
+    "wait-on": "^8.0.1"
+  },
+  "packageManager": "yarn@1.22.21+sha512.ca75da26c00327d26267ce33536e5790f18ebd53266796fbb664d2a4a5116308042dd8ee7003b276a20eace7d3c5561c3577bdd71bcb67071187af124779620a"
+}
